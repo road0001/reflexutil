@@ -1,8 +1,9 @@
-#summary One-sentence summary of this page.
+#summary All the wishs from the appliction.
 
 = Introduction =
 
-Please put here all you wishs from the application
+Please put here all you wishs from the application.
+what more to add what to change/fix...
 
 
 = Details =
