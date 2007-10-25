@@ -1,14 +1,13 @@
-#summary All the wishs from the appliction.
+#summary All the wishes from the application.
 
 = Introduction =
 
-Please put here all you wishs from the application.
-what more to add what to change/fix...
-
+Please put here all you wishes from the application.
+What more to add what to change/fix...
 
 = Details =
 
-Add your content here.  Format your content with:
+Add your content here. Format your content with:
   * Text in *bold* or _italic_
   * Headings, paragraphs, and lists
   * Automatic links to other wiki pages
