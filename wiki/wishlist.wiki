@@ -12,8 +12,7 @@ Wish List:
   - coment:
        great idea!
   - vote
-       +
-
+       (+)
   * duplicate object  - create new object that similar to the object you point on him, and let you to add it to a conteiner.
   - coment:
        no coment for now
@@ -45,3 +44,8 @@ some times it move all the layout .. so you like to have the function that disab
   - vote
        no vote for now
 
+* add an option that aloow you to set style for the util. some time the util get bad style for the code and it unreadable  or unuseable.
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
