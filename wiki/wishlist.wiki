@@ -3,16 +3,16 @@
 = Introduction =
 
 In this page, please write all your wishs from the Util. and your commect over each wish.
- also vote with * or each time you find that your wish is allready on the list ( so we can undrested which wish is the most wanted).
+ also vote with + or each time you find that your wish is allready on the list ( so we can undrested which wish is the most wanted).
 
 = Details =
 
 Wish List:
   * add print object option, that allow you to copy all the object and it propertise to clipbord, notepad or to print it.
   - coment:
-       no coment for now
+       great idea!
   - vote
-       no vote for now
+       +
 
   * duplicate object  - create new object that similar to the object you point on him, and let you to add it to a conteiner.
   - coment:
@@ -32,5 +32,16 @@ Wish List:
   - vote
        no vote for now
 
+  * control on item with mouse - move the item on the conteiner by mouse
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
 
+  * add an check box for disabling red mark feature (the one that mark the item that you point at with red frame)
+some times it move all the layout .. so you like to have the function that disable it.
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
 
