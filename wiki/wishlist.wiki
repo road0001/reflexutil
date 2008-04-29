@@ -1,0 +1,36 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+In this page, please write all your wishs from the Util. and your commect over each wish.
+ also vote with * or each time you find that your wish is allready on the list ( so we can undrested which wish is the most wanted).
+
+= Details =
+
+Wish List:
+  * add print object option, that allow you to copy all the object and it propertise to clipbord, notepad or to print it.
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
+
+  * duplicate object  - create new object that similar to the object you point on him, and let you to add it to a conteiner.
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
+
+  * add event listiner to an object
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
+
+  * add event listiner to an object
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
+
+
+
