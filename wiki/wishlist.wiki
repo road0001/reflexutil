@@ -50,7 +50,13 @@ some times it move all the layout .. so you like to have the function that disab
   - vote
        no vote for now
 
-  * search for element in the tree (or fillter) -  smetimes you look for item but u not sure where is in the layout.. u like to serach for it in all the child elemnt of a container.
+  * add search for element in the tree (or fillter) -  smetimes you look for item but u not sure where is in the layout.. u like to serach for it in all the child elemnt of a container.
+  - coment:
+       no coment for now
+  - vote
+       no vote for now
+
+  * linkage for parent item/conteiner. add the abbilty for clicking on the property parent of an item and be able to view or switch to it parent.  this help the user to navigate mach better at the hierarchy of elements.
   - coment:
        no coment for now
   - vote
