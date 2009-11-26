@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+*	Copyright 2007 Alon Kandov (kandov@gmail.com)
+*	ReflexUtil <http://reflexutil.googlecode.com>
+*	
+*	==========================================================================
+*	
+*	This file is part of ReflexUtil.
+*	
+*	ReflexUtil is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*	
+*	ReflexUtil is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	GNU General Public License for more details.
+*	
+*	You should have received a copy of the GNU General Public License
+*	along with ReflexUtil.  If not, see <http://www.gnu.org/licenses/>.
+*/
+-->
+
+<window:SizeableTitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
+	xmlns:window="com.adobe.ColdFusion.components.*"
+	showCloseButton="true" 
+	title="{ComponentUtil.getUID(componentInfo.component) + '.' + componentInfo.label}">
+	
+	<mx:Script>
+		<![CDATA[
+			import mx.core.UIComponent;
+			import net.kandov.reflexutil.utils.ClassUtil;
+			import net.kandov.reflexutil.types.ComponentInfo;
+			import mx.utils.ObjectUtil;
+			
+			import net.kandov.reflexutil.types.PropertyInfo;
+			import net.kandov.reflexutil.utils.ComponentUtil;
+			
+			
+			private const typeList:Array = [
+					PropertyInfo.BOOLEAN,
+					PropertyInfo.UINT,
+					PropertyInfo.INT,
+					PropertyInfo.NUMBER,
+					PropertyInfo.CLASS,
+					//PropertyInfo.OBJECT,
+					PropertyInfo.STRING];
+			
+			//--------------------------------------------------------------------------
+			// protected
+			//--------------------------------------------------------------------------
+			
+			
+			
+			//--------------------------------------------------------------------------
+			// private
+			//--------------------------------------------------------------------------
+			
+			[Bindable(event="dataChange")]
+			private function get componentInfo():ComponentInfo {
+				return ComponentInfo(data);
+			}
+			
+			//--------------------------------------------------------------------------
+			// handlers
+			//--------------------------------------------------------------------------
+			
+			private function updateStyleHandler():void {
+				if(componentInfo && componentInfo.component && txtStyleProperty.text && txtStyleProperty.text.length > 0){
+					var arrValuesText:Array ;
+					var value:Object ;
+					var arrValues:Array ;
+					var str:String
+					if(chkIsArray){
+						arrValues = [];
+						arrValuesText = txtStyleNewValue.text.split(',');
+					}
+					switch(comboPropertyType.selectedItem){
+						case PropertyInfo.BOOLEAN:
+							if(chkIsArray.selected){
+								for each (str in arrValuesText){
+									try{
+										arrValues.push(Boolean(str));
+									}
+									catch(e:Error){
+									}
+								}
+								
+							} else {
+								try{
+									value = Boolean(txtStyleNewValue.text);
+								}
+								catch(e:Error){
+								}
+							}
+						break;
+						case PropertyInfo.UINT:
+						case PropertyInfo.INT:
+							if(chkIsArray.selected){
+								for each (str in arrValuesText){
+									try{
+										arrValues.push(int(str));
+									}
+									catch(e:Error){
+									}
+								}
+								
+							} else {
+								try{
+									value = int(txtStyleNewValue.text);
+								}
+								catch(e:Error){
+								}
+							}
+						break;
+						case PropertyInfo.NUMBER:
+							if(chkIsArray.selected){
+								for each (str in arrValuesText){
+									try{
+										arrValues.push(Number(str));
+									}
+									catch(e:Error){
+									}
+								}
+								
+							} else {
+								try{
+									value = Number(txtStyleNewValue.text);
+								}
+								catch(e:Error){
+								}
+							}
+						break;
+						case PropertyInfo.CLASS:
+							if(chkIsArray.selected){
+								for each (str in arrValuesText){
+									try{
+										arrValues.push(str as Class);
+									}
+									catch(e:Error){
+									}
+								}
+								
+							} else {
+								try{
+									value = getDefinitionByName(txtStyleNewValue.text) as Class
+								}
+								catch(e:Error){
+								}
+							}
+						break;
+						case PropertyInfo.STRING:
+							if(chkIsArray.selected){
+								for each (str in arrValuesText){
+									try{
+										arrValues.push(str);
+									}
+									catch(e:Error){
+									}
+								}
+								
+							} else {
+								try{
+									value = txtStyleNewValue.text;
+								}
+								catch(e:Error){
+								}
+							}
+						break;
+					}
+					
+					var uicomponent:UIComponent = componentInfo.component as UIComponent;
+					if(uicomponent){
+						if(chkIsArray.selected){
+							uicomponent.setStyle(txtStyleProperty.text,arrValues);
+						} else {
+							uicomponent.setStyle(txtStyleProperty.text,value);
+						}
+					} else {
+						// TODO:[Ziv] - need to handle style for non UIComponent 
+					}
+				}	
+			}
+		]]>
+	</mx:Script>
+	<mx:Form >
+		<mx:FormItem label="Style Property Name" width="100%">
+			<mx:TextInput id="txtStyleProperty"/>
+		</mx:FormItem>
+		<mx:FormItem label="Style New Value" width="100%">
+			<mx:TextInput id="txtStyleNewValue"/>
+		</mx:FormItem>
+		<mx:FormItem label="Is The Property Is Array" width="100%">
+			<mx:CheckBox id="chkIsArray" label="Is Array"/>
+		</mx:FormItem>
+		<mx:FormItem label="Style Property Type" width="100%">
+			<mx:ComboBox id="comboPropertyType" dataProvider="{typeList}"/>
+		</mx:FormItem>
+		<mx:HBox width="100%">
+			<mx:Spacer width="100%"/>
+			<mx:Button id="txtUpdateStyle" label="Update" click="updateStyleHandler()"/>
+		</mx:HBox>
+	</mx:Form>
+	
+</window:SizeableTitleWindow>

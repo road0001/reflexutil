@@ -35,6 +35,10 @@
 	
 	<mx:Script>
 		<![CDATA[
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.graphics.codec.PNGEncoder;
+			import mx.states.SetStyle;
 			import net.kandov.reflexutil.utils.ClassUtil;
 			import mx.controls.ComboBase;
 			import mx.controls.Alert;
@@ -47,6 +51,7 @@
 			import mx.events.ListEvent;
 			import mx.managers.PopUpManager;
 			import mx.managers.SystemManager;
+			import flash.net.FileReference;
 			
 			import net.kandov.reflexutil.assets.Images;
 			import net.kandov.reflexutil.ReflexUtil;
@@ -64,8 +69,21 @@
 			private var alreadyShowed:Boolean;
 			private var componentHover:ComponentHover = new ComponentHover();
 			private var propertiesInfosDefaultSort:Sort = new Sort();
+			private var bitmap:Bitmap;
 			
-			
+			[Bindable]
+			private var isDrawing:Boolean = false;
+			[Bindable]
+			private var x1:int;
+			[Bindable]
+			private var y1:int;
+			[Bindable]
+			private var x2:int;
+			[Bindable]
+			private var y2:int;
+			[Bindable]
+			private var drawColor:uint;
+	
 			[Bindable]
             public var objectOptionsCollection:ArrayCollection = new ArrayCollection(
                 [ {label:"", handlerFunction:doNothingHandler}, 
@@ -74,7 +92,11 @@
                   {label:"Move Object", handlerFunction:moveObjectHandler}, 
                   {label:"Duplicate Object", handlerFunction:duplicateObjectHandler}, 
                   {label:"Remove Object From Layout", handlerFunction:removeObjectFromLayoutHandler},
-                  {label:"Add Object To Layout", handlerFunction:addObjectToLayoutHandler} ]);
+                  {label:"Add Object To Layout", handlerFunction:addObjectToLayoutHandler},
+                  {label:"Add Event Listener To Object", handlerFunction:addEventListenerToObjectHandler},
+                  {label:"Run Function on Object", handlerFunction:runFuntionOnObjectHandler},
+                  {label:"Goto Object Parent", handlerFunction:gotoObjectParentHandler},
+                  {label:"SetStyle to Object", handlerFunction:setStyleToObjectHandler} ]);
 			[Bindable]
             public var globalOptionsCollection:ArrayCollection = new ArrayCollection(
                 [ {label:"", handlerFunction:doNothingHandler},
@@ -123,7 +145,7 @@
 				}
 			}
 			
-			public function addComponent(component:UIComponent):void {
+			public function addComponent(component:DisplayObjectContainer):void {
 				var newComponentInfo:ComponentInfo = ComponentUtil.generateComponentInfo(component);
 				
 				var containsComponentInfo:Boolean = false;
@@ -360,6 +382,37 @@
 					selectedComponentInfo.component['includeInLayout'] = true;
 				}
 			}
+			private function addEventListenerToObjectHandler(...arg):void {
+				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
+				}
+			}
+			private function runFuntionOnObjectHandler(...arg):void {
+				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
+					/* var s:String = 'function a() { Alert.show();}';
+					var f:Function = s as Function;
+					if(f != null) {
+						f.call(this);
+					} */
+				} 
+			}
+			
+			private function gotoObjectParentHandler(...arg):void {
+				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('parent') && selectedComponentInfo.component['parent']){
+					var p:DisplayObjectContainer = selectedComponentInfo.component['parent'] as DisplayObjectContainer;
+					if(p) {
+						addComponent(p)
+					}
+				}
+			}
+			private function setStyleToObjectHandler(...arg):void {
+				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
+					var setStyleEditor:SetStyleEditor = new SetStyleEditor();
+					setStyleEditor.data = selectedComponentInfo;
+					PopUpManager.addPopUp(setStyleEditor,application as DisplayObject);
+					setStyleEditor.addEventListener(CloseEvent.CLOSE, windowCloseHandler, false, 0, true);
+					PopUpManager.centerPopUp(setStyleEditor);
+				}
+			}
 			
 			private function comboObjectOptionsChangeHandler(e:ListEvent):void {
 				var cb:ComboBox = e.currentTarget as ComboBox;
@@ -368,63 +421,228 @@
 					f.call(this,null);
 					
 				}
+				
+			}
+			
+			private function btnExecuteObjectOptionsHandler():void {
+				var cb:ComboBox = comboObjectOptions;
+				if(cb && cb.selectedItem && cb.selectedItem.handlerFunction != null){
+					var f:Function = cb.selectedItem.handlerFunction as Function;
+					f.call(this,null);
+					
+				}
+			}
+			
+			private function hideOverlayLayoutHandler():void {
+				componentHover.visible = !chkHideOverlayLayout.selected;
+			}
+			
+			private function exportToFlexHandler():void {
+				/* var valueDescriptor:ValueDescriptor = new ValueDescriptor();
+				valueDescriptor.data = selectedComponentInfo;
+				PopUpManager.addPopUp(setStyleEditor,application as DisplayObject);
+				setStyleEditor.addEventListener(CloseEvent.CLOSE, windowCloseHandler, false, 0, true);
+				PopUpManager.centerPopUp(setStyleEditor);	 */
 			}
 			
 			private function drageObjectHandler(e:MouseEvent):void {
 				if(e.altKey){
-					selectedComponentInfo.component.move(e.stageX,e.stageY);
+					selectedComponentInfo.component.x = e.stageX;
+					selectedComponentInfo.component.y = e.stageY;
 				}
+			}
+			
+			private function picColorClickHandler():void {
+				if(stage && application) { 
+					var bitmapData:BitmapData = new BitmapData(stage.width, stage.height);  
+					bitmapData.draw(stage);    
+					bitmap = new Bitmap(bitmapData);
+					application.addEventListener(MouseEvent.MOUSE_DOWN, stagePicColorHandler,false,0,true);
+					//stage.addEventListener(KeyboardEvent.KEY_DOWN,keybordHandler,false,0,true);
+				}
+			}
+			
+			private function stagePicColorHandler(e:MouseEvent):void {
+				var colorUnderTheMouse:uint;
+				if(stage) {
+					colorUnderTheMouse = bitmap.bitmapData.getPixel(e.stageX,e.stageY);
+					colorCanvas.setStyle('backgroundColor', colorUnderTheMouse);
+					lblColor.text = '#' + colorUnderTheMouse.toString(16);
+					bitmap = null;
+					application.removeEventListener(MouseEvent.MOUSE_DOWN,stagePicColorHandler);
+				}
+			}
+			
+			private function keybordHandler(e:KeyboardEvent):void {
+				if(e.keyCode) {
+					bitmap = null;
+					application.removeEventListener(MouseEvent.MOUSE_MOVE,stagePicColorHandler);
+					//stage.removeEventListener(KeyboardEvent.KEY_DOWN,keybordHandler);
+				}
+			}
+			private function btnToolBarHandler():void {
+				if(btnToolBar.selected){
+					currentState = 'toolBarOpen_State';
+				} else {
+					currentState = '';
+				}
+				btnToolBar.selected = !btnToolBar.selected
+			}
+			
+			private function mouseDownDrawHandler(e:MouseEvent):void {
+				 x1 = e.stageX;
+			     y1 = e.stageY;
+			     isDrawing = true;
+			}
+			private function mouseMoveDrawHandler(e:MouseEvent):void {
+				 x2 = e.stageX;
+			     y2 = e.stageY;
+			     if (isDrawing)
+			     {
+			        drawingCanvas.graphics.lineStyle(2, drawColor);
+			        drawingCanvas.graphics.moveTo(x1, y1);
+			        drawingCanvas.graphics.lineTo(x2, y2);
+			        x1 = x2;
+			        y1 = y2;
+			     }
+			}
+			private function mouseUpDrawHandler(e:MouseEvent):void {
+				 isDrawing = false;
+			}
+			
+			private function btnStartDrawHandler():void {
+				/* var c:Canvas = new Canvas();
+				c.width = application.width;
+				c.height = application.height; */
+					
+				if(btnStartDraw.selected){
+					//PopUpManager.addPopUp(drawingCanvas,application as DisplayObject);
+					//drawingCanvas.addEventListener(CloseEvent.CLOSE, windowCloseHandler, false, 0, true);
+					application.addChild(drawingCanvas);
+				} else {
+					//drawingCanvas.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+					application.removeChild(drawingCanvas);
+				}
+				
+				/* if(btnStartDraw.selected){
+					application.addEventListener(MouseEvent.MOUSE_DOWN , mouseDownDrawHandler,false,0,true);
+					application.addEventListener(MouseEvent.MOUSE_MOVE , mouseMoveDrawHandler,false,0,true);
+					application.addEventListener(MouseEvent.MOUSE_UP , mouseUpDrawHandler,false,0,true);
+				} else {
+					application.removeEventListener(MouseEvent.MOUSE_DOWN , mouseDownDrawHandler);
+					application.removeEventListener(MouseEvent.MOUSE_MOVE , mouseMoveDrawHandler);
+					application.removeEventListener(MouseEvent.MOUSE_UP , mouseUpDrawHandler);
+				} */
+			}
+			
+			private function btnSaveHandler():void {
+			    var bd:BitmapData = new BitmapData(application.width,application.height);
+		        bd.draw(application);
+		  
+		        var ba:ByteArray = (new PNGEncoder()).encode(bd);
+		        var fr:FileReference = new FileReference();
+		        fr.save(ba, "screenShot.png");
+			}
+			
+			private function windowCloseHandler(e:CloseEvent):void {
+				var popUp:IFlexDisplayObject = IFlexDisplayObject(e.currentTarget);
+				PopUpManager.removePopUp(popUp);
 			}
 		]]>
 	</mx:Script>
 	
+	<mx:Array>
+		<mx:Canvas id="drawingCanvas" width="{application.width}" height="{application.height}" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+			mouseUp="mouseUpDrawHandler(event)"
+			mouseMove="mouseMoveDrawHandler(event)"
+			mouseDown="mouseDownDrawHandler(event)"
+			/>
+
+	</mx:Array>
 	
+	<window:states>
+		<mx:State name="toolBarOpen_State">
+			<mx:AddChild relativeTo="{vbox1}" position="after">
+				<mx:VBox id="toolbarBox"  borderStyle="solid" borderThickness="1">
+					<mx:VBox  borderStyle="solid" borderThickness="1">
+						 <mx:ColorPicker change="drawColor = event.target.selectedColor"/>
+					     <mx:Button label="Erase" click="{application.graphics.clear()}" />
+					     <mx:Button label="Save Image" click="btnSaveHandler()"/>
+					     <mx:Button id="btnStartDraw" label="Start draw" click="btnStartDrawHandler()" toggle="true"/>
+					</mx:VBox>
+					<mx:VBox  borderStyle="solid" borderThickness="1">
+						<mx:Canvas width="30" height="20" id="colorCanvas" backgroundAlpha="1" />
+						<mx:Label id="lblColor" width="100" selectable="true" text="#ffffff" />
+						<mx:Button label="Pick Color" id="btnPicColor" click="picColorClickHandler()"/>
+					</mx:VBox>
+				</mx:VBox>
+			</mx:AddChild>
+			
+		</mx:State>
+	</window:states>
 	
-	<mx:VBox width="100%" height="100%">
-		<mx:VDividedBox width="100%" height="100%">
-			<!-- FIXME: selectedIndex doesn't always refresh when inspecting when window is hidden -->
-			<mx:Tree id="treeComponentsInfos" width="100%" height="30%" dataProvider="{componentsInfos}"
-				selectedIndex="{componentsInfos.getItemIndex(selectedComponentInfo)}"
-				contextMenu="{treeComponentsInfosContextMenu}"
-				change="selectedComponentInfo = ComponentInfo(event.itemRenderer.data)"
-				keyDown="treeComponentsInfosKeyDownHandler(event)"
-				mouseMove="treeComponentsInfosMouseMoveHandler(event)"/>
-			<mx:VBox width="100%" height="70%">
-				<mx:HBox width="100%" horizontalGap="2" verticalAlign="middle">
-					<mx:Label text="Type:"/>
-					<mx:ComboBox id="cmbPropertiesFilterType" width="100" change="propertiesInfos.refresh()">
-						<mx:dataProvider>
-							<mx:Array>
-								<mx:Object label="All" data="{PropertyTypes.ALL}"/>
-								<mx:Object label="Properties" data="{PropertyTypes.PROPERTY}"/>
-								<mx:Object label="Styles" data="{PropertyTypes.STYLE}"/>
-							</mx:Array>
-						</mx:dataProvider>
-					</mx:ComboBox>
-					<mx:Spacer width="10"/>
-					<mx:Label text="Name:"/>
-					<mx:TextInput id="txtPropertiesFilterName" width="100%" change="propertiesInfos.refresh()"/>
-					<mx:Image id="btnRefreshPropertiesInfos" source="{Images.REFRESH}"
-						toolTip="Refresh all not bindable properties"
-						buttonMode="true" click="btnRefreshPropertiesInfosClickHandler()"/>
-				</mx:HBox>
-				<mx:DataGrid id="dgPropertiesInfos" width="100%" height="100%" dataProvider="{propertiesInfos}"
-					alternatingItemColors="#ffffff" horizontalGridLines="true" horizontalGridLineColor="#cccccc">
-					<mx:columns>
-						<mx:DataGridColumn headerText="Name" dataField="name"/>
-						<mx:DataGridColumn headerText="Value" dataField="value" sortable="false"
-							itemRenderer="{new ClassFactory(ValueEditor)}">
-						</mx:DataGridColumn>
-					</mx:columns>
-				</mx:DataGrid>
-			</mx:VBox>
-		</mx:VDividedBox>
-	</mx:VBox>
-	<mx:ControlBar>
+	<mx:HBox id="mainHBox" width="100%" height="100%">
+		<mx:VBox width="100%" height="100%" id="vbox1">
+		
+			<mx:VDividedBox width="100%" height="100%">
+				
+				<!-- FIXME: selectedIndex doesn't always refresh when inspecting when window is hidden -->
+				<mx:Tree id="treeComponentsInfos" width="100%" height="30%" dataProvider="{componentsInfos}"
+					selectedIndex="{componentsInfos.getItemIndex(selectedComponentInfo)}"
+					contextMenu="{treeComponentsInfosContextMenu}"
+					change="selectedComponentInfo = ComponentInfo(event.itemRenderer.data)"
+					keyDown="treeComponentsInfosKeyDownHandler(event)"
+					mouseMove="treeComponentsInfosMouseMoveHandler(event)"/>
+				<mx:VBox width="100%" height="70%">
+					<mx:HBox width="100%" horizontalGap="2" verticalAlign="middle">
+						<mx:Label text="Type:"/>
+						<mx:ComboBox id="cmbPropertiesFilterType" width="100" change="propertiesInfos.refresh()">
+							<mx:dataProvider>
+								<mx:Array>
+									<mx:Object label="All" data="{PropertyTypes.ALL}"/>
+									<mx:Object label="Properties" data="{PropertyTypes.PROPERTY}"/>
+									<mx:Object label="Styles" data="{PropertyTypes.STYLE}"/>
+								</mx:Array>
+							</mx:dataProvider>
+						</mx:ComboBox>
+						<mx:Spacer width="10"/>
+						<mx:Label text="Name:"/>
+						<mx:TextInput id="txtPropertiesFilterName" width="100%" change="propertiesInfos.refresh()"/>
+						<mx:Image id="btnRefreshPropertiesInfos" source="{Images.REFRESH}"
+							toolTip="Refresh all not bindable properties"
+							buttonMode="true" click="btnRefreshPropertiesInfosClickHandler()"/>
+					</mx:HBox>
+					<mx:DataGrid id="dgPropertiesInfos" width="100%" height="100%" dataProvider="{propertiesInfos}"
+						alternatingItemColors="#ffffff" horizontalGridLines="true" horizontalGridLineColor="#cccccc">
+						<mx:columns>
+							<mx:DataGridColumn headerText="Name" dataField="name"/>
+							<mx:DataGridColumn headerText="Value" dataField="value" sortable="false"
+								itemRenderer="{new ClassFactory(ValueEditor)}">
+							</mx:DataGridColumn>
+						</mx:columns>
+					</mx:DataGrid>
+				</mx:VBox>
+			</mx:VDividedBox>
+		</mx:VBox>
+	</mx:HBox>
+	
+	<mx:ControlBar id="controlbar1">
+	<mx:VBox width="100%">
+		<mx:HBox width="100%">
+			<mx:CheckBox id="chkHideOverlayLayout" label="hide/show Overlay Layout" toolTip="hide/show Overlay Layout" change="hideOverlayLayoutHandler()"/>
+			<mx:Button id="btnExportToText" label="Export to text" click="exportToFlexHandler()"/>
+			<mx:Button id="btnToolBar" label="Open Toolbar" toggle="true" click="btnToolBarHandler()"/>
+			
+		</mx:HBox>
 		<!--<mx:Button label="Move Object" click="moveObjectHandler()" />-->
-		<mx:ComboBox id="comboObjectOptions" dataProvider="{objectOptionsCollection}"
-			change="comboObjectOptionsChangeHandler(event)"/>
-		<mx:ComboBox id="comboGlobalOptions" dataProvider="{globalOptionsCollection}"
-			change="comboObjectOptionsChangeHandler(event)"/>
+		<mx:HBox width="100%">
+			<mx:ComboBox id="comboObjectOptions" dataProvider="{objectOptionsCollection}"
+				/>
+			<mx:Button id="btnExecute" label="Execute Object Options" click="btnExecuteObjectOptionsHandler()"/>
+		</mx:HBox>
+		<!--<mx:ComboBox id="comboGlobalOptions" dataProvider="{globalOptionsCollection}"
+			change="comboObjectOptionsChangeHandler(event)"/>-->
+		
+	</mx:VBox>
 	</mx:ControlBar>
 </window:SizeableTitleWindow>

@@ -22,9 +22,8 @@
 
 package net.kandov.reflexutil.types {
 	
+	import flash.display.DisplayObjectContainer;
 	import flash.events.EventDispatcher;
-	
-	import mx.core.UIComponent;
 	
 	import net.kandov.reflexutil.utils.ClassUtil;
 	
@@ -33,13 +32,13 @@ package net.kandov.reflexutil.types {
 	extends EventDispatcher
 	implements IComparable {
 		
-		public var component:UIComponent;
+		public var component:DisplayObjectContainer;
 		public var label:String;
 		public var parent:ComponentInfo;
 		public var children:Array;
 		public var propertiesInfos:Array;
 		
-		public function ComponentInfo(component:UIComponent, label:String) {
+		public function ComponentInfo(component:DisplayObjectContainer, label:String) {
 			super();
 			
 			this.component = component;

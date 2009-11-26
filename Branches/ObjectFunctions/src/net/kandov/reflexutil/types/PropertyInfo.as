@@ -22,10 +22,9 @@
 
 package net.kandov.reflexutil.types {
 	
+	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	
-	import mx.core.UIComponent;
 	
 	import net.kandov.reflexutil.utils.ClassUtil;
 	
@@ -36,11 +35,19 @@ package net.kandov.reflexutil.types {
 	extends EventDispatcher
 	implements IComparable {
 		
+		public static const BOOLEAN:String = "Boolean";
+		public static const UINT:String = "uint";
+		public static const INT:String = "int";
+		public static const NUMBER:String = "Number";
+		public static const STRING:String = "String";
+		public static const CLASS:String = "Class";
+		public static const OBJECT:String = "Object";
+		
 		public static const URI_MX_INTERNAL:String = "http://www.adobe.com/2006/flex/mx/internal";
 		
 		public static const VALUE_CHANGED:String = "valueChanged";
 		
-		public var component:UIComponent;
+		public var component:DisplayObjectContainer;
 		public var name:String;
 		public var type:String;
 		public var isStyle:Boolean;
@@ -63,7 +70,7 @@ package net.kandov.reflexutil.types {
 			}
 		}
 		
-		public function PropertyInfo(component:UIComponent, name:String, type:String, isStyle:Boolean,
+		public function PropertyInfo(component:DisplayObjectContainer, name:String, type:String, isStyle:Boolean,
 			access:String = null, uri:String = null) {
 			super();
 			

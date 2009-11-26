@@ -26,7 +26,6 @@ package net.kandov.reflexutil.utils {
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.Stage;
 	import flash.geom.Point;
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
@@ -82,18 +81,20 @@ package net.kandov.reflexutil.utils {
 			return components;
 		}
 		
-		public static function getUID(component:UIComponent):String {
-			var uid:String = component.uid;
-			
-			if (uid.indexOf(".") != -1) {
-				var strArr:Array = uid.split(".");
-				uid = strArr[strArr.length - 1];
-			}
-			
+		public static function getUID(component:DisplayObjectContainer):String {
+			var uicomponent:UIComponent = component as UIComponent;
+			var uid:String = 'DisplayObjectContainer';
+			if(uicomponent) {
+				uid = uicomponent.uid;
+				if (uid.indexOf(".") != -1) {
+					var strArr:Array = uid.split(".");
+					uid = strArr[strArr.length - 1];
+				}
+			}	
 			return uid;
 		}
 		
-		public static function getAbsolutePosition(component:UIComponent):Point {
+		public static function getAbsolutePosition(component:DisplayObjectContainer):Point {
 			var nativeParent:DisplayObjectContainer = component.mx_internal::$parent;
 			if(nativeParent){
 				return nativeParent.localToGlobal(new Point(component.x, component.y));
@@ -113,7 +114,7 @@ package net.kandov.reflexutil.utils {
 			}
 		}
 		
-		public static function generateComponentInfo(component:UIComponent):ComponentInfo {
+		public static function generateComponentInfo(component:DisplayObjectContainer):ComponentInfo {
 			var componentInfo:ComponentInfo = new ComponentInfo(
 				component, getUID(component) + " (" + ClassUtil.getClassName(component) + ")");
 			
@@ -139,7 +140,7 @@ package net.kandov.reflexutil.utils {
 			return componentInfo;
 		}
 		
-		public static function generatePropertiesInfos(component:UIComponent):Array {
+		public static function generatePropertiesInfos(component:DisplayObjectContainer):Array {
 			var propertiesInfos:Array = new Array();
 			
 			var type:XML = describeType(component);
@@ -247,31 +248,39 @@ package net.kandov.reflexutil.utils {
 		}
 		
 		public static function getPropertyValue(propertyInfo:PropertyInfo):void {
-			if (!propertyInfo.bindable) {
-				try {
-					if (propertyInfo.isStyle) {
-						propertyInfo.value = propertyInfo.component.getStyle(propertyInfo.name);
-					} else if (propertyInfo.access != "writeonly" &&
-						propertyInfo.uri != PropertyInfo.URI_MX_INTERNAL) {
-						propertyInfo.value = propertyInfo.component[propertyInfo.name];
+			var uicomponent:UIComponent = propertyInfo.component as UIComponent;
+			if(uicomponent){
+				if (!propertyInfo.bindable) {
+					try {
+						if (propertyInfo.isStyle) {
+							propertyInfo.value = uicomponent.getStyle(propertyInfo.name);
+						} else if (propertyInfo.access != "writeonly" &&
+							propertyInfo.uri != PropertyInfo.URI_MX_INTERNAL) {
+							propertyInfo.value = uicomponent[propertyInfo.name];
+						}
+					} catch (error:Error) {
+						//cannot get value from component's property or style
 					}
-				} catch (error:Error) {
-					//cannot get value from component's property or style
 				}
 			}
 		}
 		
 		public static function setPropertyValue(propertyInfo:PropertyInfo, value:Object):void {
-			try {
-				if (propertyInfo.isStyle) {
-					propertyInfo.component.setStyle(propertyInfo.name, value);
-				} else {
-					propertyInfo.component[propertyInfo.name] = value;
+			var uicomponent:UIComponent = propertyInfo.component as UIComponent;
+			if(uicomponent){
+				try {
+					if (propertyInfo.isStyle) {
+						uicomponent.setStyle(propertyInfo.name, value);
+					} else {
+						uicomponent[propertyInfo.name] = value;
+					}
+				} catch (error:Error) {
+					//cannot set value to component's property or style
 				}
-			} catch (error:Error) {
-				//cannot set value to component's property or style
-			}
-			finally {
+				finally {
+					getPropertyValue(propertyInfo);
+				}
+			} else {
 				getPropertyValue(propertyInfo);
 			}
 		}
