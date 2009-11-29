@@ -35,6 +35,7 @@
 	
 	<mx:Script>
 		<![CDATA[
+			import mx.managers.CursorManager;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
 			import mx.graphics.codec.PNGEncoder;
@@ -83,6 +84,11 @@
 			private var y2:int;
 			[Bindable]
 			private var drawColor:uint;
+			
+			[Embed(source="../assets/colorPicker.png")]
+			public static var colorPickerCursor:Class;
+			
+			private var cursorID:int;
 	
 			[Bindable]
             public var objectOptionsCollection:ArrayCollection = new ArrayCollection(
@@ -457,6 +463,7 @@
 					var bitmapData:BitmapData = new BitmapData(stage.width, stage.height);  
 					bitmapData.draw(stage);    
 					bitmap = new Bitmap(bitmapData);
+					cursorID = CursorManager.setCursor(colorPickerCursor,2,-6,-6);
 					application.addEventListener(MouseEvent.MOUSE_DOWN, stagePicColorHandler,false,0,true);
 					//stage.addEventListener(KeyboardEvent.KEY_DOWN,keybordHandler,false,0,true);
 				}
@@ -464,6 +471,7 @@
 			
 			private function stagePicColorHandler(e:MouseEvent):void {
 				var colorUnderTheMouse:uint;
+				CursorManager.removeCursor(cursorID);
 				if(stage) {
 					colorUnderTheMouse = bitmap.bitmapData.getPixel(e.stageX,e.stageY);
 					colorCanvas.setStyle('backgroundColor', colorUnderTheMouse);

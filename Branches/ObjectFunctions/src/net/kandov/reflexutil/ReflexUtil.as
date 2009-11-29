@@ -190,10 +190,10 @@ package net.kandov.reflexutil {
 				contextMenuItems[menuItem] = component;
 				customItems.push(menuItem);
 			}
-			var colorUnderTheMouse:uint = ComponentUtil.getColorUnderMouse(stage,application);
+		/* 	var colorUnderTheMouse:uint = ComponentUtil.getColorUnderMouse(stage,application);
 			menuItem = new ContextMenuItem("Color is: " + colorUnderTheMouse.toString(16));
 			contextMenuItems[menuItem] = null;
-			customItems.push(menuItem);
+			customItems.push(menuItem); */
 		}
 		
 		private function projectPageMenuItemSelectHandler(event:ContextMenuEvent):void {
