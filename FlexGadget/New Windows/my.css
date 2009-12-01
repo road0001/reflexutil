@@ -1,0 +1,20 @@
+ResizableTitleWindow
+{
+    
+    minimizeButtonDisabledSkin: Embed('Assets/min.png');
+	minimizeButtonDownSkin: Embed('Assets/min.png');
+    minimizeButtonOverSkin: Embed('Assets/min.png');
+	minimizeButtonUpSkin: Embed('Assets/min.png');
+
+    maximizeButtonDisabledSkin: Embed('Assets/max.png');
+	maximizeButtonDownSkin: Embed('Assets/max.png');
+    maximizeButtonOverSkin: Embed('Assets/max.png');
+	maximizeButtonUpSkin: Embed('Assets/max.png');
+    
+    restoreButtonDisabledSkin: Embed('Assets/restore.png');
+	restoreButtonDownSkin: Embed('Assets/restore.png');
+    restoreButtonOverSkin: Embed('Assets/restore.png');
+	restoreButtonUpSkin: Embed('Assets/restore.png');
+
+    resizeAffordance: 6;
+}
