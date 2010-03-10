@@ -65,7 +65,7 @@ package net.kandov.reflexutil {
 			window.application = application;
 			window.x = -1;
 			window.y = -1;
-			window.width = 400;
+			window.width = 420;
 			window.height = 600;
 		}
 		
@@ -206,8 +206,10 @@ package net.kandov.reflexutil {
 		
 		private function inspectComponentMenuItemSelectHandler(event:ContextMenuEvent):void {
 			var component:UIComponent = contextMenuItems[event.target];
-			window.addComponent(component);
-			window.show();
+			if(component) {
+				window.addComponent(component);
+				window.show();
+			}
 		}
 		
 		

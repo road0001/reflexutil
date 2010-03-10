@@ -75,6 +75,8 @@
 			[Bindable]
 			private var isDrawing:Boolean = false;
 			[Bindable]
+			private var isRoller:Boolean = false;
+			[Bindable]
 			private var x1:int;
 			[Bindable]
 			private var y1:int;
@@ -84,6 +86,8 @@
 			private var y2:int;
 			[Bindable]
 			private var drawColor:uint;
+			[Bindable]
+			private var lineThickenss:int = 2;
 			
 			[Embed(source="../assets/colorPicker.png")]
 			public static var colorPickerCursor:Class;
@@ -507,23 +511,31 @@
 			     y2 = e.stageY;
 			     if (isDrawing)
 			     {
-			        drawingCanvas.graphics.lineStyle(2, drawColor);
+			     	if(isRoller) {
+			     		drawingCanvas.graphics.clear();
+			     	}
+			        drawingCanvas.graphics.lineStyle(lineThickenss, drawColor);
 			        drawingCanvas.graphics.moveTo(x1, y1);
 			        drawingCanvas.graphics.lineTo(x2, y2);
-			        x1 = x2;
-			        y1 = y2;
+			     	if(!isRoller) { 
+				        x1 = x2;
+				        y1 = y2;
+			     	}
 			     }
+			     
 			}
 			private function mouseUpDrawHandler(e:MouseEvent):void {
 				 isDrawing = false;
 			}
 			
-			private function btnStartDrawHandler():void {
-				/* var c:Canvas = new Canvas();
-				c.width = application.width;
-				c.height = application.height; */
-					
-				if(btnStartDraw.selected){
+			private function btnEraseClickHandler():void {
+				if(drawingCanvas){
+					drawingCanvas.graphics.clear();
+				}
+			}
+			
+			private function startDraw():void {
+				if(btnStartDraw.selected || btnStartDrawRoller.selected){
 					//PopUpManager.addPopUp(drawingCanvas,application as DisplayObject);
 					//drawingCanvas.addEventListener(CloseEvent.CLOSE, windowCloseHandler, false, 0, true);
 					application.addChild(drawingCanvas);
@@ -531,6 +543,15 @@
 					//drawingCanvas.dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
 					application.removeChild(drawingCanvas);
 				}
+			}
+			private function btnStartDrawHandler():void {
+				btnStartDrawRoller.selected = false;
+				startDraw();
+				/* var c:Canvas = new Canvas();
+				c.width = application.width;
+				c.height = application.height; */
+					
+				
 				
 				/* if(btnStartDraw.selected){
 					application.addEventListener(MouseEvent.MOUSE_DOWN , mouseDownDrawHandler,false,0,true);
@@ -569,6 +590,27 @@
 					}
 				}
 			}
+			private function btnStartDrawRollerHandler():void {
+				lblLineWidth.includeInLayout = lblLineWidth.visible = isRoller = !isRoller;
+				btnStartDraw.selected = !isRoller;
+				startDraw();
+			}
+			private function sizeSliderChangeHandler():void {
+				lineThickenss = sizeSlider.value;
+				updateLineIcon();
+			}
+			private function colorPickerChangeHandler():void {
+				drawColor = colorPicker.selectedColor;
+				updateLineIcon();
+			}
+			private function updateLineIcon():void {
+				if(lineIcon){
+					lineIcon.graphics.clear();
+					lineIcon.graphics.beginFill(drawColor,1);
+					lineIcon.graphics.drawEllipse(0, 0, lineThickenss,lineThickenss);
+					lineIcon.graphics.endFill();
+				}
+			}
 		]]>
 	</mx:Script>
 	
@@ -584,13 +626,21 @@
 	<window:states>
 		<mx:State name="toolBarOpen_State">
 			<mx:AddChild relativeTo="{vbox1}" position="after">
-				<mx:VBox id="toolbarBox"  borderStyle="solid" borderThickness="1">
-					<mx:VBox  borderStyle="solid" borderThickness="1">
-						 <mx:ColorPicker change="drawColor = event.target.selectedColor"/>
-					     <mx:Button label="Erase" click="{application.graphics.clear()}" />
-					     <mx:Button label="Save Image" click="btnSaveHandler()"/>
-					     <mx:Button id="btnStartDraw" label="Start draw" click="btnStartDrawHandler()" toggle="true"/>
-					</mx:VBox>
+				<mx:VBox id="toolbarBox"  borderStyle="solid" borderThickness="0">
+					<mx:HBox  borderStyle="solid" borderThickness="1">
+						<mx:VBox  >
+							<mx:HBox width="100%">
+								<mx:VSlider id="sizeSlider" value="{lineThickenss}" change="sizeSliderChangeHandler()" minimum="0" maximum="100" height="107"/>
+							 	<mx:Canvas id="lineIcon" borderColor="#000000" borderStyle="solid" borderThickness="1" width="100" height="100"/>
+							 </mx:HBox>
+							 <mx:ColorPicker id="colorPicker" change="colorPickerChangeHandler()"/>
+						     <mx:Button label="Erase" click="btnEraseClickHandler()" />
+						     <mx:Button label="Save Image" click="btnSaveHandler()"/>
+						     <mx:Button id="btnStartDraw" label="Start draw" click="btnStartDrawHandler()" toggle="true"/>
+						     <mx:Button id="btnStartDrawRoller" label="use Roller" click="btnStartDrawRollerHandler()" toggle="true"/>
+						     <mx:Label id="lblLineWidth" text="{Math.sqrt(Math.pow((x1-x2),2) + Math.pow((y1-y2),2))} px" visible="false" includeInLayout="false"/>
+						</mx:VBox>
+					</mx:HBox>
 					<mx:VBox  borderStyle="solid" borderThickness="1">
 						<mx:Canvas width="30" height="20" id="colorCanvas" backgroundAlpha="1" />
 						<mx:Label id="lblColor" width="100" selectable="true" text="#ffffff" />
