@@ -26,7 +26,7 @@
 <window:SizeableTitleWindow xmlns:mx="http://www.adobe.com/2006/mxml"
 	xmlns:window="com.adobe.ColdFusion.components.*"
 	showCloseButton="true" close="hide()" title="{'ReflexUtil (Version ' + ReflexUtil.VERSION + ')'}"
-	creationComplete="creationCompleteHandler()">
+	creationComplete="creationCompleteHandler()" xmlns:components="net.kandov.reflexutil.components.*">
 	
 	<mx:Metadata>
 		[Event(type="flash.events.Event", name="applicationChanged")]
@@ -556,6 +556,19 @@
 				var popUp:IFlexDisplayObject = IFlexDisplayObject(e.currentTarget);
 				PopUpManager.removePopUp(popUp);
 			}
+			
+			private function gotoObjectParentClickedHandler():void {
+				gotoObjectParentHandler();
+			}
+			private function showHideIconClickedHandler():void {
+				if(selectedComponentInfo && selectedComponentInfo.component) {
+					if(selectedComponentInfo.component.visible) {
+						hideObjectHandler();
+					} else {
+						showObjectHandler();
+					}
+				}
+			}
 		]]>
 	</mx:Script>
 	
@@ -595,12 +608,15 @@
 			<mx:VDividedBox width="100%" height="100%">
 				
 				<!-- FIXME: selectedIndex doesn't always refresh when inspecting when window is hidden -->
-				<mx:Tree id="treeComponentsInfos" width="100%" height="30%" dataProvider="{componentsInfos}"
+				<components:ComponentTree id="treeComponentsInfos" width="100%" height="30%" dataProvider="{componentsInfos}"
 					selectedIndex="{componentsInfos.getItemIndex(selectedComponentInfo)}"
 					contextMenu="{treeComponentsInfosContextMenu}"
+					gotoParentObjectIconClicked="gotoObjectParentClickedHandler()"
+					showHideIconClicked="showHideIconClickedHandler()"
 					change="selectedComponentInfo = ComponentInfo(event.itemRenderer.data)"
 					keyDown="treeComponentsInfosKeyDownHandler(event)"
-					mouseMove="treeComponentsInfosMouseMoveHandler(event)"/>
+					mouseMove="treeComponentsInfosMouseMoveHandler(event)"
+					itemRenderer="{new ClassFactory(ComponentInfoItemRenderer)}"/>
 				<mx:VBox width="100%" height="70%">
 					<mx:HBox width="100%" horizontalGap="2" verticalAlign="middle">
 						<mx:Label text="Type:"/>
