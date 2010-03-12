@@ -35,6 +35,7 @@
 	
 	<mx:Script>
 		<![CDATA[
+			import net.kandov.reflexutil.types.MethodInfo;
 			import mx.managers.CursorManager;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
@@ -67,9 +68,11 @@
 			private var _selectedComponentInfo:ComponentInfo;
 			private var _hoveredComponentInfo:ComponentInfo;
 			private var _propertiesInfos:ArrayCollection = new ArrayCollection();
+			private var _methodInfos:ArrayCollection = new ArrayCollection();
 			private var alreadyShowed:Boolean;
 			private var componentHover:ComponentHover = new ComponentHover();
 			private var propertiesInfosDefaultSort:Sort = new Sort();
+			private var methodesInfosDefaultSort:Sort = new Sort();
 			private var bitmap:Bitmap;
 			
 			[Bindable]
@@ -210,8 +213,10 @@
 				if (_selectedComponentInfo != value) {
 					if (value) {
 						setPropertiesInfosSource(value.propertiesInfos);
+						setMethodInfosSource(value.methodsInfos);
 					} else {
 						setPropertiesInfosSource(null);
+						setMethodInfosSource(null);
 					}
 					
 					_selectedComponentInfo = value;
@@ -248,6 +253,17 @@
 				if (_propertiesInfos.source != source) {
 					_propertiesInfos.source = source;
 					dispatchEvent(new Event("propertiesInfosChanged"));
+				}
+			}
+			[Bindable(event="methodInfosChanged")]
+			private function get methodInfos():ArrayCollection {
+				return _methodInfos;
+			}
+			
+			private function setMethodInfosSource(source:Array):void {
+				if (_methodInfos.source != source) {
+					_methodInfos.source = source;
+					dispatchEvent(new Event("methodInfosChanged"));
 				}
 			}
 			
@@ -293,6 +309,28 @@
 				
 				return match;
 			}
+			private function filterMethodInfosInfos(item:Object):Boolean {
+				var methodInfo:MethodInfo = MethodInfo(item);
+				
+/* 				var filterType:int = int(cmbPropertiesFilterType.selectedItem.data);
+				var propertyIsStyle:Boolean = propertyInfo.isStyle;
+				if ((filterType == PropertyTypes.PROPERTY && propertyIsStyle) ||
+					(filterType == PropertyTypes.STYLE && !propertyIsStyle)) {
+					return false;
+				}
+ */				
+				var filterName:String = txtPropertiesFilterName.text.toLowerCase();
+				var methodName:String = methodInfo.name.toLowerCase();
+				var filters:Array = filterName.split("|");
+				var match:Boolean = false;
+				for each (var filter:String in filters) {
+					if (methodName.indexOf(filter) != -1) {
+						match = true;
+					}
+				}
+				
+				return match;
+			}
 			
 			//--------------------------------------------------------------------------
 			// handlers
@@ -309,7 +347,12 @@
 				propertiesInfos.sort = propertiesInfosDefaultSort;
 				propertiesInfos.filterFunction = filterPropertiesInfos;
 				propertiesInfos.refresh();
+				methodesInfosDefaultSort.fields = [new SortField("name")];
+				methodInfos.sort = methodesInfosDefaultSort;
+				methodInfos.filterFunction = filterMethodInfosInfos;
+				methodInfos.refresh();
 				dispatchEvent(new Event("propertiesInfosChanged"));
+				dispatchEvent(new Event("methodsInfosChanged"));
 			}
 			
 			private function treeComponentsInfosMouseMoveHandler(event:MouseEvent):void {
@@ -631,7 +674,7 @@
 						<mx:VBox  >
 							<mx:HBox width="100%">
 								<mx:VSlider id="sizeSlider" value="{lineThickenss}" change="sizeSliderChangeHandler()" minimum="0" maximum="100" height="107"/>
-							 	<mx:Canvas id="lineIcon" borderColor="#000000" borderStyle="solid" borderThickness="1" width="100" height="100"/>
+							 	<mx:Canvas id="lineIcon" borderColor="#000000" borderStyle="solid" borderThickness="1" width="109" height="100"/>
 							 </mx:HBox>
 							 <mx:ColorPicker id="colorPicker" change="colorPickerChangeHandler()"/>
 						     <mx:Button label="Erase" click="btnEraseClickHandler()" />
@@ -681,20 +724,32 @@
 						</mx:ComboBox>
 						<mx:Spacer width="10"/>
 						<mx:Label text="Name:"/>
-						<mx:TextInput id="txtPropertiesFilterName" width="100%" change="propertiesInfos.refresh()"/>
+						<mx:TextInput id="txtPropertiesFilterName" width="100%" change="propertiesInfos.refresh();methodInfos.refresh()"/>
 						<mx:Image id="btnRefreshPropertiesInfos" source="{Images.REFRESH}"
 							toolTip="Refresh all not bindable properties"
 							buttonMode="true" click="btnRefreshPropertiesInfosClickHandler()"/>
 					</mx:HBox>
-					<mx:DataGrid id="dgPropertiesInfos" width="100%" height="100%" dataProvider="{propertiesInfos}"
-						alternatingItemColors="#ffffff" horizontalGridLines="true" horizontalGridLineColor="#cccccc">
-						<mx:columns>
-							<mx:DataGridColumn headerText="Name" dataField="name"/>
-							<mx:DataGridColumn headerText="Value" dataField="value" sortable="false"
-								itemRenderer="{new ClassFactory(ValueEditor)}">
-							</mx:DataGridColumn>
-						</mx:columns>
-					</mx:DataGrid>
+					<mx:VDividedBox width="100%" height="100%">
+						<mx:DataGrid id="dgPropertiesInfos" width="100%" height="100%" dataProvider="{propertiesInfos}"
+							alternatingItemColors="#ffffff" horizontalGridLines="true" horizontalGridLineColor="#cccccc">
+							<mx:columns>
+								<mx:DataGridColumn headerText="Name" dataField="name"/>
+								<mx:DataGridColumn headerText="Value" dataField="value" sortable="false"
+									itemRenderer="{new ClassFactory(ValueEditor)}">
+								</mx:DataGridColumn>
+							</mx:columns>
+						</mx:DataGrid>
+						<mx:DataGrid id="dgMethodInfos" width="100%" height="100%" dataProvider="{methodInfos}"
+							alternatingItemColors="#ffffff" horizontalGridLines="true" horizontalGridLineColor="#cccccc">
+							<mx:columns>
+								<mx:DataGridColumn headerText="Name" dataField="name"/>
+								<mx:DataGridColumn headerText="Return Type" dataField="returnType"/>
+								<!--<mx:DataGridColumn headerText="Value" dataField="value" sortable="false"
+									itemRenderer="{new ClassFactory(ValueEditor)}">
+								</mx:DataGridColumn>-->
+							</mx:columns>
+						</mx:DataGrid>
+					</mx:VDividedBox>
 				</mx:VBox>
 			</mx:VDividedBox>
 		</mx:VBox>

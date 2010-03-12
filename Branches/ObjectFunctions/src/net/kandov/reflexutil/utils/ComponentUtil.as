@@ -36,6 +36,8 @@ package net.kandov.reflexutil.utils {
 	
 	import net.kandov.reflexutil.components.ComponentHover;
 	import net.kandov.reflexutil.types.ComponentInfo;
+	import net.kandov.reflexutil.types.MethodInfo;
+	import net.kandov.reflexutil.types.ParameterInfo;
 	import net.kandov.reflexutil.types.PropertyInfo;
 	
 	public class ComponentUtil {
@@ -134,16 +136,110 @@ package net.kandov.reflexutil.utils {
 					}
 				}
 			}
-			
-			componentInfo.propertiesInfos = generatePropertiesInfos(component);
+			var type:XML = describeType(component);
+			componentInfo.propertiesInfos = generatePropertiesInfos(component,type);
+			componentInfo.methodsInfos = generateMethodsInfos(component,type);
 			
 			return componentInfo;
 		}
 		
-		public static function generatePropertiesInfos(component:DisplayObjectContainer):Array {
+		public static function generateMethodsInfos(component:DisplayObjectContainer,type:XML):Array {
+			var methodsInfos:Array = new Array();
+			
+			var methodInfo:MethodInfo;
+			var value:Object;
+			
+			//get properties
+			
+			var methods:XMLList = type.method;
+			var method:XML;
+			var parameter:XML;
+			var parameters:Array = [];
+			var parameterInfo:ParameterInfo;
+			var uniqueMethods:XMLList = new XMLList();
+			for each (method in methods) {
+				if (!uniqueMethods.contains(method)) {
+					uniqueMethods += method;
+				}
+			}
+			
+			if (uniqueMethods.length() != 0) {
+				for each (method in uniqueMethods) {
+					methodInfo = new MethodInfo(
+						component, method.@name, method.@declaredBy,  method.@returnType);
+					if(method.@parameter){
+						for each (parameter in method.children()){
+							parameterInfo = new ParameterInfo(
+								component, method.@name, parameter.@index, parameter.@type, parameter.@optional);
+							parameters.push(parameterInfo);
+						}
+						methodInfo.parameter = parameters;
+					}
+					methodsInfos.push(methodInfo);
+				}
+			}
+			
+			//get parameters
+			
+			/* var styles:XMLList = type.metadata.(attribute("name") == "Style");
+			for each (var extendsClass:XML in type.extendsClass) {
+				try {
+					var extendsClassType:XML = describeType(new (getDefinitionByName(extendsClass.@type)));
+					styles += extendsClassType.metadata.(attribute("name") == "Style");
+				} catch (error:Error) {
+					//cannot instantiate this type of class
+				}
+				
+				if (extendsClass.@type == "mx.core::UIComponent") {
+					break;
+				}
+			}
+			
+			var style:XML;
+			var uniqueStyles:XMLList = new XMLList();
+			for each (style in styles) {
+				if (!uniqueStyles.contains(style)) {
+					uniqueStyles += style;
+				}
+			}
+			
+			if (uniqueStyles.length() != 0) {
+				var styleArgs:Object;
+				for each (style in uniqueStyles) {
+					styleArgs = new Object();
+					for each (var arg:XML in style.arg) {
+						styleArgs[arg.@key] = arg.@value;
+					}
+					
+					propertyInfo = new PropertyInfo(component, styleArgs.name, styleArgs.type, true);
+					
+					if (styleArgs.hasOwnProperty("enumeration")) {
+						propertyInfo.type = "Enumeration";
+						propertyInfo.enumeration = String(styleArgs.enumeration).split(",");
+					} else if (CUSTOM_FORMAT_TYPES.indexOf(String(styleArgs.format)) != -1) {
+						propertyInfo.type = styleArgs.format;
+					} else {
+						propertyInfo.type = styleArgs.type;
+					}
+					
+					getPropertyValue(propertyInfo);
+					
+					propertiesInfos.push(propertyInfo);
+				}
+			}
+			
+			propertiesInfos.push(new PropertyInfo(component, "top", "Number", true));
+			propertiesInfos.push(new PropertyInfo(component, "bottom", "Number", true));
+			propertiesInfos.push(new PropertyInfo(component, "left", "Number", true));
+			propertiesInfos.push(new PropertyInfo(component, "right", "Number", true));
+			propertiesInfos.push(new PropertyInfo(component, "horizontalCenter", "Number", true));
+			propertiesInfos.push(new PropertyInfo(component, "verticalCenter", "Number", true)); */
+			
+			return methodsInfos;
+		}
+		public static function generatePropertiesInfos(component:DisplayObjectContainer,type:XML):Array {
 			var propertiesInfos:Array = new Array();
 			
-			var type:XML = describeType(component);
 			var propertyInfo:PropertyInfo;
 			var value:Object;
 			

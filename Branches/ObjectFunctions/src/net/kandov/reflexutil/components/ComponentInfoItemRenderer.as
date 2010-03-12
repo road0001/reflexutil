@@ -1,5 +1,7 @@
 package net.kandov.reflexutil.components
 {
+	import flash.display.Graphics;
+	
 	import mx.controls.Image;
 	import mx.controls.treeClasses.TreeItemRenderer;
 	
@@ -61,6 +63,12 @@ package net.kandov.reflexutil.components
 		
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {
 			super.updateDisplayList(unscaledWidth,unscaledHeight);
+			var g:Graphics = graphics;
+			//boundingBox
+			g.beginFill(0,0);
+			g.drawRect(0,0,unscaledWidth,unscaledHeight);
+			g.endFill();
+			
         	var posX:Number = label.x + label.width - 20;
 			if (gotoParentObjectIcon)
 	        {
@@ -81,6 +89,7 @@ package net.kandov.reflexutil.components
 				gotoParentObjectIcon.id	 = "gotoParentObjectIcon";
 				gotoParentObjectIcon.styleName = this;
 				gotoParentObjectIcon.source = gotoParentObjectIconClass;
+				gotoParentObjectIcon.toolTip = "Goto Parent Object";
 				gotoParentObjectIcon.width = 16;
 				gotoParentObjectIcon.height = 16;
 				
@@ -91,6 +100,7 @@ package net.kandov.reflexutil.components
 				showHideIcon = new Image();
 				showHideIcon.styleName = this;
 				showHideIcon.id	 = "showHideIcon";
+				showHideIcon.toolTip = "Show Or Hide Object";
 				//showHideIcon.source = showIconClass;
 				showHideIcon.width = 16;
 				showHideIcon.height = 16;

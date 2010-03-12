@@ -37,6 +37,7 @@ package net.kandov.reflexutil.types {
 		public var parent:ComponentInfo;
 		public var children:Array;
 		public var propertiesInfos:Array;
+		public var methodsInfos:Array;
 		
 		public function ComponentInfo(component:DisplayObjectContainer, label:String) {
 			super();
