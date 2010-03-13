@@ -168,7 +168,9 @@ package net.kandov.reflexutil.utils {
 					methodInfo = new MethodInfo(
 						component, method.@name, method.@declaredBy,  method.@returnType);
 					if(method.@parameter){
-						for each (parameter in method.children()){
+						parameters =[];
+						var methodList:XMLList = method.children()
+						for each (parameter in methodList){
 							parameterInfo = new ParameterInfo(
 								component, method.@name, parameter.@index, parameter.@type, parameter.@optional);
 							parameters.push(parameterInfo);
