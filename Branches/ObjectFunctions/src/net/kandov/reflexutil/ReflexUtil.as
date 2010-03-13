@@ -65,7 +65,7 @@ package net.kandov.reflexutil {
 			window.application = application;
 			window.x = -1;
 			window.y = -1;
-			window.width = 420;
+			window.width = 434;
 			window.height = 600;
 		}
 		
