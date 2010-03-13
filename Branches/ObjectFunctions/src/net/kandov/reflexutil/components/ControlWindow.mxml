@@ -91,6 +91,8 @@
 			private var drawColor:uint;
 			[Bindable]
 			private var lineThickenss:int = 2;
+			[Bindable]
+			private var zoomScale:Number = 1;
 			
 			[Embed(source="../assets/colorPicker.png")]
 			public static var colorPickerCursor:Class;
@@ -506,26 +508,37 @@
 			}
 			
 			private function picColorClickHandler():void {
+				if(btnPicColor.selected){
+				} else {
+					application.removeEventListener(MouseEvent.MOUSE_OVER, stagePicColorOverHandler);
+				}
 				if(stage && application) { 
 					var bitmapData:BitmapData = new BitmapData(stage.width, stage.height);  
 					bitmapData.draw(stage);    
 					bitmap = new Bitmap(bitmapData);
 					cursorID = CursorManager.setCursor(colorPickerCursor,2,-6,-6);
-					application.addEventListener(MouseEvent.MOUSE_DOWN, stagePicColorHandler,false,0,true);
+					application.addEventListener(MouseEvent.MOUSE_OVER, stagePicColorOverHandler,false,0,true);
+					
 					//stage.addEventListener(KeyboardEvent.KEY_DOWN,keybordHandler,false,0,true);
 				}
 			}
 			
-			private function stagePicColorHandler(e:MouseEvent):void {
+			private function stagePicColorOverHandler(e:MouseEvent):void {
+				application.addEventListener(MouseEvent.MOUSE_DOWN, stagePicColorHandler,false,0,true);
 				var colorUnderTheMouse:uint;
-				CursorManager.removeCursor(cursorID);
-				if(stage) {
+				
+				if(stage && bitmap) {
 					colorUnderTheMouse = bitmap.bitmapData.getPixel(e.stageX,e.stageY);
 					colorCanvas.setStyle('backgroundColor', colorUnderTheMouse);
 					lblColor.text = '#' + colorUnderTheMouse.toString(16);
-					bitmap = null;
-					application.removeEventListener(MouseEvent.MOUSE_DOWN,stagePicColorHandler);
 				}
+				
+			}
+			private function stagePicColorHandler(e:MouseEvent):void {
+				CursorManager.removeCursor(cursorID);
+				bitmap = null;
+				application.removeEventListener(MouseEvent.MOUSE_DOWN,stagePicColorHandler);
+				btnPicColor.selected = true;
 			}
 			
 			private function keybordHandler(e:KeyboardEvent):void {
@@ -545,13 +558,13 @@
 			}
 			
 			private function mouseDownDrawHandler(e:MouseEvent):void {
-				 x1 = e.stageX;
-			     y1 = e.stageY;
+				 x1 = e.stageX / zoomScale;
+			     y1 = e.stageY / zoomScale;
 			     isDrawing = true;
 			}
 			private function mouseMoveDrawHandler(e:MouseEvent):void {
-				 x2 = e.stageX;
-			     y2 = e.stageY;
+				 x2 = e.stageX / zoomScale;
+			     y2 = e.stageY / zoomScale;
 			     if (isDrawing)
 			     {
 			     	if(isRoller) {
@@ -654,14 +667,43 @@
 					lineIcon.graphics.endFill();
 				}
 			}
+			
+			private function btnZoomInClickHandler():void {
+				zoomScale += 0.1;
+				application.scaleY = application.scaleX = zoomScale;
+				//setZoomCanvas();
+			}
+			
+			
+			private function btnZoomOutClickHandler():void {
+				zoomScale -= 0.1;
+				application.scaleY = application.scaleX = zoomScale;
+				//setZoomCanvas();
+				
+			}
+			private function setZoomCanvas():void {
+				if(zoomScale == 1){
+					if(zoomingCanvas.parent == application){
+						application.removeChild(zoomingCanvas);
+					}
+				} else {
+					if(zoomingCanvas.parent != application) {
+						application.addChild(zoomingCanvas);
+					}
+				}
+			}
 		]]>
 	</mx:Script>
 	
 	<mx:Array>
 		<mx:Canvas id="drawingCanvas" width="{application.width}" height="{application.height}" horizontalScrollPolicy="off" verticalScrollPolicy="off"
+			scaleX="{scaleX}"
+			scaleY="{scaleY}"
 			mouseUp="mouseUpDrawHandler(event)"
 			mouseMove="mouseMoveDrawHandler(event)"
 			mouseDown="mouseDownDrawHandler(event)"
+			/>
+		<mx:Canvas id="zoomingCanvas" width="{application.width}" height="{application.height}" horizontalScrollPolicy="off" verticalScrollPolicy="off"
 			/>
 
 	</mx:Array>
@@ -684,11 +726,15 @@
 						     <mx:Label id="lblLineWidth" text="{Math.sqrt(Math.pow((x1-x2),2) + Math.pow((y1-y2),2))} px" visible="false" includeInLayout="false"/>
 						</mx:VBox>
 					</mx:HBox>
-					<mx:VBox  borderStyle="solid" borderThickness="1">
+					<mx:VBox  borderStyle="solid" borderThickness="1" width="100%">
 						<mx:Canvas width="30" height="20" id="colorCanvas" backgroundAlpha="1" />
 						<mx:Label id="lblColor" width="100" selectable="true" text="#ffffff" />
-						<mx:Button label="Pick Color" id="btnPicColor" click="picColorClickHandler()"/>
+						<mx:Button label="Pick Color" id="btnPicColor" click="picColorClickHandler()" toggle="true"/>
 					</mx:VBox>
+					<mx:HBox  borderStyle="solid" borderThickness="1" width="100%">
+						<mx:Button label="+" id="btnZoomIn" click="btnZoomInClickHandler()" />
+						<mx:Button label="-" id="btnZoomOut" click="btnZoomOutClickHandler()" />
+					</mx:HBox>
 				</mx:VBox>
 			</mx:AddChild>
 			
