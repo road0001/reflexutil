@@ -46,7 +46,7 @@ package net.kandov.reflexutil.components
 				_componentInfo = value;
 				if(showHideIcon){
 					if(_componentInfo && _componentInfo.component){
-							showHideIcon.source = _componentInfo.component.visible ? hideIconClass : showHideIcon;
+							showHideIcon.source = _componentInfo.component.visible ? hideIconClass : showIconClass;
 					
 					} else {
 						showHideIcon.source = null;
