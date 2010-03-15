@@ -1,17 +1,18 @@
 package net.kandov.reflexutil.types
 {
+	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.EventDispatcher;
 
 	public class MethodInfo extends EventDispatcher implements IComparable
 	{
-		public var component:DisplayObjectContainer;
+		public var component:DisplayObject;
 		public var name:String;
 		public var declaredBy:String;
 		public var returnType:String;
 		public var parameter:Array;
 		
-		public function MethodInfo(component:DisplayObjectContainer, name:String, declaredBy:String, returnType:String, parameter:Array = null)
+		public function MethodInfo(component:DisplayObject, name:String, declaredBy:String, returnType:String, parameter:Array = null)
 		{
 			super();
 			

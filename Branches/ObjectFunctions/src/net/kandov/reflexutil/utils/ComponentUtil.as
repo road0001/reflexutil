@@ -29,6 +29,7 @@ package net.kandov.reflexutil.utils {
 	import flash.geom.Point;
 	import flash.utils.describeType;
 	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	
 	import mx.binding.utils.BindingUtils;
 	import mx.core.UIComponent;
@@ -48,9 +49,21 @@ package net.kandov.reflexutil.utils {
 		// interface
 		//--------------------------------------------------------------------------
 		
-		public static function getHolderComponent(displayObject:DisplayObject):UIComponent {
+/* 		public static function getHolderComponent(displayObject:DisplayObject):UIComponent {
 			if (displayObject is UIComponent) {
 				return UIComponent(displayObject);
+			} else {
+				if (displayObject.parent) {
+					return getHolderComponent(displayObject.parent);
+				} else {
+					return null;
+				}
+			}
+		}
+		 */
+		public static function getHolderComponent(displayObject:DisplayObject):DisplayObject {
+			if (displayObject is DisplayObject) {
+				return DisplayObject(displayObject);
 			} else {
 				if (displayObject.parent) {
 					return getHolderComponent(displayObject.parent);
@@ -74,30 +87,51 @@ package net.kandov.reflexutil.utils {
 				new Point(container.stage.mouseX, container.stage.mouseY));
 			
 			for each (var displayObject:DisplayObject in displayObjects) {
-				var component:UIComponent = getHolderComponent(displayObject);
-				if (component && components.indexOf(component) == -1) {
-					components.push(component);
+				
+				var component:DisplayObject = getHolderComponent(displayObject);
+				if(component) {
+					var displayObjectContainer:DisplayObjectContainer = component as DisplayObjectContainer;
+					if(!displayObjectContainer) {
+						if (component.parent && components.indexOf(component.parent)== -1) {
+							components.push(component.parent);
+							
+						}
+					}
+					if (components.indexOf(component) == -1) {
+						components.push(component);
+					}
 				}
 			}
 			
 			return components;
 		}
 		
-		public static function getUID(component:DisplayObjectContainer):String {
+		public static function getUID(component:DisplayObject):String {
 			var uicomponent:UIComponent = component as UIComponent;
-			var uid:String = 'DisplayObjectContainer';
+		//	var uid:String = 'DisplayObjectContainer';
+			var uid:String = getQualifiedClassName(component);
 			if(uicomponent) {
 				uid = uicomponent.uid;
 				if (uid.indexOf(".") != -1) {
 					var strArr:Array = uid.split(".");
 					uid = strArr[strArr.length - 1];
 				}
-			}	
+			}/*  else {
+				if(component && component.parent) {
+					return getUID(component.parent);
+				} 
+				
+			} */
 			return uid;
 		}
 		
-		public static function getAbsolutePosition(component:DisplayObjectContainer):Point {
-			var nativeParent:DisplayObjectContainer = component.mx_internal::$parent;
+		public static function getAbsolutePosition(component:DisplayObject):Point {
+			var nativeParent:DisplayObject
+			if(component.hasOwnProperty('mx_internal::$parent')) {
+				nativeParent = component.mx_internal::$parent;
+			} else if(component.hasOwnProperty('parent')) {
+				nativeParent = component.parent;
+			}
 			if(nativeParent){
 				return nativeParent.localToGlobal(new Point(component.x, component.y));
 			}
@@ -116,26 +150,27 @@ package net.kandov.reflexutil.utils {
 			}
 		}
 		
-		public static function generateComponentInfo(component:DisplayObjectContainer):ComponentInfo {
+		public static function generateComponentInfo(component:DisplayObject):ComponentInfo {
 			var componentInfo:ComponentInfo = new ComponentInfo(
 				component, getUID(component) + " (" + ClassUtil.getClassName(component) + ")");
 			
-			if (component.numChildren != 0) {
+			var displayObjectContainer:DisplayObjectContainer = component as DisplayObjectContainer;
+			if (displayObjectContainer && displayObjectContainer.numChildren != 0) {
 				var child:DisplayObject;
-				for (var i:int = 0; i < component.numChildren; i ++) {
-					child = component.getChildAt(i);
+				for (var i:int = 0; i < displayObjectContainer.numChildren; i ++) {
+					child = displayObjectContainer.getChildAt(i);
 					
-					if (child is UIComponent && !(child is ComponentHover)) {
+					if (child is DisplayObject && !(child is ComponentHover)) {
 						if (!componentInfo.children) {
 							componentInfo.children = new Array();
 						}
 						
-						var childComponentInfo:ComponentInfo = generateComponentInfo(UIComponent(child));
+						var childComponentInfo:ComponentInfo = generateComponentInfo(DisplayObject(child));
 						childComponentInfo.parent = componentInfo;
 						componentInfo.children.push(childComponentInfo);
 					}
 				}
-			}
+			} 
 			var type:XML = describeType(component);
 			componentInfo.propertiesInfos = generatePropertiesInfos(component,type);
 			componentInfo.methodsInfos = generateMethodsInfos(component,type);
@@ -143,7 +178,7 @@ package net.kandov.reflexutil.utils {
 			return componentInfo;
 		}
 		
-		public static function generateMethodsInfos(component:DisplayObjectContainer,type:XML):Array {
+		public static function generateMethodsInfos(component:DisplayObject,type:XML):Array {
 			var methodsInfos:Array = new Array();
 			
 			var methodInfo:MethodInfo;
@@ -239,7 +274,7 @@ package net.kandov.reflexutil.utils {
 			
 			return methodsInfos;
 		}
-		public static function generatePropertiesInfos(component:DisplayObjectContainer,type:XML):Array {
+		public static function generatePropertiesInfos(component:DisplayObject,type:XML):Array {
 			var propertiesInfos:Array = new Array();
 			
 			var propertyInfo:PropertyInfo;
@@ -346,15 +381,18 @@ package net.kandov.reflexutil.utils {
 		}
 		
 		public static function getPropertyValue(propertyInfo:PropertyInfo):void {
-			var uicomponent:UIComponent = propertyInfo.component as UIComponent;
-			if(uicomponent){
+			var displayObject:DisplayObject = propertyInfo.component as DisplayObject;
+			if(displayObject){
 				if (!propertyInfo.bindable) {
 					try {
 						if (propertyInfo.isStyle) {
-							propertyInfo.value = uicomponent.getStyle(propertyInfo.name);
+							var uiComponent:UIComponent =displayObject as UIComponent;
+							if(uiComponent){
+								propertyInfo.value = uiComponent.getStyle(propertyInfo.name);
+							}
 						} else if (propertyInfo.access != "writeonly" &&
 							propertyInfo.uri != PropertyInfo.URI_MX_INTERNAL) {
-							propertyInfo.value = uicomponent[propertyInfo.name];
+							propertyInfo.value = displayObject[propertyInfo.name];
 						}
 					} catch (error:Error) {
 						//cannot get value from component's property or style

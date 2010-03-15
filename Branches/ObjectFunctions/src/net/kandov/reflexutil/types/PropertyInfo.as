@@ -22,7 +22,7 @@
 
 package net.kandov.reflexutil.types {
 	
-	import flash.display.DisplayObjectContainer;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	
@@ -47,7 +47,7 @@ package net.kandov.reflexutil.types {
 		
 		public static const VALUE_CHANGED:String = "valueChanged";
 		
-		public var component:DisplayObjectContainer;
+		public var component:DisplayObject;
 		public var name:String;
 		public var type:String;
 		public var isStyle:Boolean;
@@ -70,7 +70,7 @@ package net.kandov.reflexutil.types {
 			}
 		}
 		
-		public function PropertyInfo(component:DisplayObjectContainer, name:String, type:String, isStyle:Boolean,
+		public function PropertyInfo(component:DisplayObject, name:String, type:String, isStyle:Boolean,
 			access:String = null, uri:String = null) {
 			super();
 			

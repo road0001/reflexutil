@@ -38,7 +38,7 @@
 			// interface
 			//--------------------------------------------------------------------------
 			
-			public function show(component:DisplayObjectContainer):void {
+			public function show(component:DisplayObject):void {
 				visible = true;
 				includeInLayout = true;
 				
