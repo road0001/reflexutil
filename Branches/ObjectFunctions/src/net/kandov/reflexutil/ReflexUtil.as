@@ -22,6 +22,7 @@
 
 package net.kandov.reflexutil {
 	
+	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.ContextMenuEvent;
 	import flash.net.URLRequest;
@@ -183,7 +184,7 @@ package net.kandov.reflexutil {
 			}
 			
 			var components:Array = ComponentUtil.getComponentsUnderMouse(stage);
-			for each (var component:UIComponent in components) {
+			for each (var component:DisplayObject in components) {
 				menuItem = new ContextMenuItem("Inspect [" + ComponentUtil.getUID(component) + "]");
 				menuItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT,
 					inspectComponentMenuItemSelectHandler, false, 0, true);
@@ -205,7 +206,7 @@ package net.kandov.reflexutil {
 		}
 		
 		private function inspectComponentMenuItemSelectHandler(event:ContextMenuEvent):void {
-			var component:UIComponent = contextMenuItems[event.target];
+			var component:DisplayObject = contextMenuItems[event.target] as DisplayObject;
 			if(component) {
 				window.addComponent(component);
 				window.show();
