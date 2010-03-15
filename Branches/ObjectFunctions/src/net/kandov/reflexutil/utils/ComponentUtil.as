@@ -386,7 +386,7 @@ package net.kandov.reflexutil.utils {
 				if (!propertyInfo.bindable) {
 					try {
 						if (propertyInfo.isStyle) {
-							var uiComponent:UIComponent =displayObject as UIComponent;
+							var uiComponent:UIComponent = displayObject as UIComponent;
 							if(uiComponent){
 								propertyInfo.value = uiComponent.getStyle(propertyInfo.name);
 							}
@@ -402,13 +402,18 @@ package net.kandov.reflexutil.utils {
 		}
 		
 		public static function setPropertyValue(propertyInfo:PropertyInfo, value:Object):void {
-			var uicomponent:UIComponent = propertyInfo.component as UIComponent;
-			if(uicomponent){
+/* 			var uicomponent:UIComponent = propertyInfo.component as UIComponent;
+			if(uicomponent){ */
+			var displayObject:DisplayObject = propertyInfo.component as DisplayObject;
+			if(displayObject){
 				try {
 					if (propertyInfo.isStyle) {
-						uicomponent.setStyle(propertyInfo.name, value);
+						var uiComponent:UIComponent =  displayObject as UIComponent;
+						if(uiComponent){
+							uiComponent.setStyle(propertyInfo.name, value);
+						}
 					} else {
-						uicomponent[propertyInfo.name] = value;
+						displayObject[propertyInfo.name] = value;
 					}
 				} catch (error:Error) {
 					//cannot set value to component's property or style
