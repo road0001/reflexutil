@@ -62,7 +62,7 @@
 			import net.kandov.reflexutil.types.ComponentInfo;
 			import net.kandov.reflexutil.types.PropertyInfo;
 			import net.kandov.reflexutil.types.PropertyTypes;
-			import r1.deval.D;
+			//import r1.deval.D;
 			
 			private var _application:Application;
 			private var _componentsInfos:ArrayCollection = new ArrayCollection();
@@ -110,8 +110,8 @@
                   {label:"Duplicate Object", handlerFunction:duplicateObjectHandler}, 
                   {label:"Remove Object From Layout", handlerFunction:removeObjectFromLayoutHandler},
                   {label:"Add Object To Layout", handlerFunction:addObjectToLayoutHandler},
-                  {label:"Add Event Listener To Object", handlerFunction:addEventListenerToObjectHandler},
-                  {label:"Run Function on Object", handlerFunction:runFuntionOnObjectHandler},
+                  //{label:"Add Event Listener To Object", handlerFunction:addEventListenerToObjectHandler},
+                  //{label:"Run Function on Object", handlerFunction:runFuntionOnObjectHandler},
                   {label:"Goto Object Parent", handlerFunction:gotoObjectParentHandler},
                   {label:"SetStyle to Object", handlerFunction:setStyleToObjectHandler} ]);
 			[Bindable]
@@ -415,27 +415,30 @@
 				}
 			}
 			private function moveObjectHandler(...arg):void {
-				 if(selectedComponentInfo && selectedComponentInfo.component ){
+				if(selectedComponentInfo && selectedComponentInfo.component  && selectedComponentInfo.component is UIComponent){
 				 	stage.addChild(selectedComponentInfo.component as UIComponent);
 					application.addEventListener(MouseEvent.MOUSE_MOVE, drageObjectHandler,false,0,true);
+				} else {
+					Alert.show('This feature apply only for UIComponent');
 				} 
 			}
 			private function duplicateObjectHandler(...arg):void {
-				 if(selectedComponentInfo && selectedComponentInfo.component ){
+				 if(selectedComponentInfo && selectedComponentInfo.component && selectedComponentInfo.component is UIComponent){
 					var newUIObject:UIComponent = ClassUtil.clone(selectedComponentInfo.component) as UIComponent;
 				 	if(newUIObject && selectedComponentInfo.component.parent) {
 				 		selectedComponentInfo.component.parent.addChild(newUIObject);
-				 	}
-				 	
+				 	} 
+				} else {
+					Alert.show('This feature apply only for UIComponent');
 				} 
 			}
 			private function removeObjectFromLayoutHandler(...arg):void {
-				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
+				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('includeInLayout')){
 					selectedComponentInfo.component['includeInLayout'] = false;
 				}
 			}
 			private function addObjectToLayoutHandler(...arg):void {
-				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
+				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('includeInLayout')){
 					selectedComponentInfo.component['includeInLayout'] = true;
 				}
 			}
@@ -443,15 +446,15 @@
 				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
 				}
 			}
-			private function runFuntionOnObjectHandler(...arg):void {
+		/* 	private function runFuntionOnObjectHandler(...arg):void {
 				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('visible')){
-					/* var s:String = 'function a() { Alert.show();}';
+					var s:String = 'function a() { Alert.show();}';
 					var f:Function = s as Function;
 					if(f != null) {
 						f.call(this);
-					} */
+					} 
 				} 
-			}
+			} */
 			
 			private function gotoObjectParentHandler(...arg):void {
 				if(selectedComponentInfo && selectedComponentInfo.component && hasOwnProperty('parent') && selectedComponentInfo.component['parent']){
@@ -490,16 +493,16 @@
 				}
 			}
 			
-			private function hideOverlayLayoutHandler():void {
+			/* private function hideOverlayLayoutHandler():void {
 				componentHover.visible = !chkHideOverlayLayout.selected;
-			}
+			} */
 			
 			private function evalFunctionHandler():void {
 				//
-				var six:int;
+				/* var six:int;
 				six = D.eval("4 + 2") as int;
 				six = D.evalToInt("var x=0; for(i=1;i<=3;++i)x+=i;return x");
-				Alert.show(six.toString());	
+				Alert.show(six.toString());	 */
 			}
 			
 			private function exportToFlexHandler():void {
@@ -519,17 +522,18 @@
 			
 			private function picColorClickHandler():void {
 				if(btnPicColor.selected){
+					if(stage && application) { 
+						var bitmapData:BitmapData = new BitmapData(stage.width, stage.height);  
+						bitmapData.draw(stage);    
+						bitmap = new Bitmap(bitmapData);
+						cursorID = CursorManager.setCursor(colorPickerCursor,2,-6,-6);
+						application.addEventListener(MouseEvent.MOUSE_OVER, stagePicColorOverHandler,false,0,true);
+						
+						//stage.addEventListener(KeyboardEvent.KEY_DOWN,keybordHandler,false,0,true);
+					}
 				} else {
 					application.removeEventListener(MouseEvent.MOUSE_OVER, stagePicColorOverHandler);
-				}
-				if(stage && application) { 
-					var bitmapData:BitmapData = new BitmapData(stage.width, stage.height);  
-					bitmapData.draw(stage);    
-					bitmap = new Bitmap(bitmapData);
-					cursorID = CursorManager.setCursor(colorPickerCursor,2,-6,-6);
-					application.addEventListener(MouseEvent.MOUSE_OVER, stagePicColorOverHandler,false,0,true);
-					
-					//stage.addEventListener(KeyboardEvent.KEY_DOWN,keybordHandler,false,0,true);
+					CursorManager.removeCursor(cursorID);
 				}
 			}
 			
@@ -558,13 +562,23 @@
 					//stage.removeEventListener(KeyboardEvent.KEY_DOWN,keybordHandler);
 				}
 			}
+			private function btnFunctionListHandler():void {
+				if(btnFunctionList.selected){
+					dgMethodInfos.visible = true;
+					dgMethodInfos.includeInLayout = true;
+					btnFunctionList.label = 'Hide Function List';
+				} else {
+					dgMethodInfos.visible = false;
+					dgMethodInfos.includeInLayout = false;
+					btnFunctionList.label = 'Show Function List';
+				}
+			}
 			private function btnToolBarHandler():void {
 				if(btnToolBar.selected){
 					currentState = 'toolBarOpen_State';
 				} else {
 					currentState = '';
 				}
-				btnToolBar.selected = !btnToolBar.selected
 			}
 			
 			private function mouseDownDrawHandler(e:MouseEvent):void {
@@ -747,6 +761,7 @@
 					</mx:HBox>
 				</mx:VBox>
 			</mx:AddChild>
+			<mx:SetProperty target="{btnToolBar}" name="label" value="Close Toolbar"/>
 			
 		</mx:State>
 	</window:states>
@@ -795,7 +810,7 @@
 								</mx:DataGridColumn>
 							</mx:columns>
 						</mx:DataGrid>
-						<mx:DataGrid id="dgMethodInfos" width="100%" height="100%" dataProvider="{methodInfos}"
+						<mx:DataGrid id="dgMethodInfos" width="100%" height="100%" dataProvider="{methodInfos}" visible="false" includeInLayout="false"
 							alternatingItemColors="#ffffff" horizontalGridLines="true" horizontalGridLineColor="#cccccc">
 							<mx:columns>
 								<mx:DataGridColumn headerText="Name" dataField="name"/>
@@ -814,12 +829,17 @@
 	
 	<mx:ControlBar id="controlbar1">
 	<mx:VBox width="100%">
-		<mx:HBox width="100%">
+	
+<!--		<mx:HBox width="100%">
 			<mx:CheckBox id="chkHideOverlayLayout" label="hide/show Overlay Layout" toolTip="hide/show Overlay Layout" change="hideOverlayLayoutHandler()"/>
 			<mx:Button id="btnExportToText" label="Export to text" click="exportToFlexHandler()"/>
 			<mx:Button id="btnEval" label="Eval Function" click="evalFunctionHandler()"/>
 			<mx:Button id="btnToolBar" label="Open Toolbar" toggle="true" click="btnToolBarHandler()"/>
 			
+		</mx:HBox>-->
+		<mx:HBox width="100%">
+			<mx:Button id="btnToolBar" label="Open Toolbar" toggle="true" click="btnToolBarHandler()"/>
+			<mx:Button id="btnFunctionList" label="Show Function List" toggle="true" click="btnFunctionListHandler()"/>
 		</mx:HBox>
 		<!--<mx:Button label="Move Object" click="moveObjectHandler()" />-->
 		<mx:HBox width="100%">
